@@ -1,0 +1,1852 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Notes to Self — Personal Blog</title>
+
+  <!-- Google Font: Inter for clean, distraction-free editorial reading -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Tailwind Configuration: Enables class-based Dark Mode & sets Inter as the default font -->
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+</head>
+<body class="bg-[#FAF9F6] text-[#1F2937] dark:bg-[#161615] dark:text-[#E6E4DF] font-sans antialiased transition-colors duration-300 selection:bg-stone-300/60 dark:selection:bg-stone-700/60">
+
+  <!-- Centered 680px Editorial Reading Column -->
+  <div class="min-h-screen flex flex-col max-w-[680px] mx-auto px-5 sm:px-6 py-10 sm:py-14">
+
+    <!-- =====================================================================
+         1. HEADER, BLOG TITLE & MINIMAL NAVIGATION
+         ===================================================================== -->
+    <header class="mb-12 sm:mb-14">
+      <div class="mb-6">
+        <a
+          href="#"
+          id="brand-link"
+          class="inline-block text-2xl sm:text-3xl font-bold tracking-tight text-[#1F2937] dark:text-[#F3F2EE] hover:opacity-80 transition-opacity"
+        >
+          Notes to Self
+        </a>
+        <p class="mt-1.5 text-sm sm:text-base text-stone-500 dark:text-stone-400">
+          A quiet digital notebook for daily life, random thoughts, and things worth keeping.
+        </p>
+      </div>
+
+      <!-- Navigation Bar -->
+      <nav aria-label="Primary Navigation" class="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-stone-200/90 dark:border-stone-800">
+        <!-- Left Tabs: Journal & About -->
+        <div class="flex items-center gap-1.5">
+          <button
+            type="button"
+            id="tab-journal"
+            onclick="switchView('journal')"
+            class="px-3.5 py-1.5 text-sm font-medium rounded-xl bg-stone-200/80 dark:bg-stone-800 text-[#1F2937] dark:text-[#F3F2EE] transition-colors"
+          >
+            Journal
+          </button>
+          <button
+            type="button"
+            id="tab-about"
+            onclick="switchView('about')"
+            class="px-3.5 py-1.5 text-sm font-medium rounded-xl text-stone-500 dark:text-stone-400 hover:text-[#1F2937] dark:hover:text-[#F3F2EE] hover:bg-stone-200/50 dark:hover:bg-stone-800/60 transition-colors"
+          >
+            About
+          </button>
+        </div>
+
+        <!-- Right Controls: "+ Write Post", View Mode Toggle, Google Sign-In & Day/Night Theme Toggle -->
+        <div class="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            id="toggle-composer-btn"
+            onclick="toggleComposer()"
+            class="hidden px-4 py-2 text-sm font-medium rounded-xl bg-[#1F2937] text-[#FAF9F6] hover:bg-stone-700 dark:bg-[#E6E4DF] dark:text-[#161615] dark:hover:bg-stone-300 transition-colors shadow-sm"
+          >
+            + Write Post
+          </button>
+
+          <button
+            type="button"
+            id="view-mode-toggle-btn"
+            onclick="toggleViewMode()"
+            aria-pressed="true"
+            title="View Mode is active — sign in with an authorized Google account to edit"
+            class="inline-flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-medium rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-200/85 dark:bg-stone-800 text-[#1F2937] dark:text-[#F3F2EE] hover:bg-stone-200/70 dark:hover:bg-stone-800/80 transition-colors"
+          >
+            <!-- Eye Icon (shown when editing is unlocked) -->
+            <svg id="icon-view-eye" class="w-4 h-4 shrink-0 hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+            <!-- Lock Icon (shown when read-only View Mode is active) -->
+            <svg id="icon-view-lock" class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <rect x="5" y="11" width="14" height="10" rx="2" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8 11V7a4 4 0 118 0v4" />
+            </svg>
+            <span id="view-mode-label">Read-Only</span>
+          </button>
+
+          <!-- Google Sign-In Button (Shown when signed out) -->
+          <button
+            type="button"
+            id="google-signin-btn"
+            onclick="signInWithGoogle()"
+            title="Sign in with an authorized Google account to unlock Edit Mode"
+            class="inline-flex items-center gap-2 px-3.5 py-2 text-xs sm:text-sm font-medium rounded-xl border border-stone-300/90 dark:border-stone-700 bg-white dark:bg-[#1D1D1B] text-[#1F2937] dark:text-[#F3F2EE] hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors shadow-sm"
+          >
+            <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+              <path fill="#4285F4" d="M23.49 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.47c-.29 1.48-1.14 2.73-2.4 3.58v3h3.86c2.26-2.09 3.56-5.17 3.56-8.82z" />
+              <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.86-3c-1.08.72-2.45 1.16-4.07 1.16-3.13 0-5.78-2.11-6.73-4.96H1.29v3.09C3.26 21.3 7.31 24 12 24z" />
+              <path fill="#FBBC05" d="M5.27 14.29c-.25-.72-.38-1.49-.38-2.29s.14-1.57.38-2.29V6.62H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.38l3.98-3.09z" />
+              <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.98 3.09c.95-2.85 3.6-4.96 6.73-4.96z" />
+            </svg>
+            <span>Sign in to Edit</span>
+          </button>
+
+          <button
+            type="button"
+            id="theme-toggle-btn"
+            onclick="toggleTheme()"
+            aria-label="Toggle Day and Night mode"
+            title="Switch Day / Night mode"
+            class="p-2.5 rounded-xl border border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-300 hover:bg-stone-200/50 dark:hover:bg-stone-800/70 transition-colors"
+          >
+            <!-- Sun Icon (shown in Night mode) -->
+            <svg id="icon-sun" class="w-4 h-4 hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="4"></circle>
+              <path stroke-linecap="round" d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>
+            </svg>
+            <!-- Moon Icon (shown in Day mode) -->
+            <svg id="icon-moon" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
+            </svg>
+          </button>
+        </div>
+      </nav>
+
+      <!-- Editor Session Bar (Shown when signed in as an authorized editor) -->
+      <div
+        id="editor-session-bar"
+        class="hidden mt-4 px-3.5 py-2 rounded-xl border border-stone-200/80 dark:border-stone-800 bg-white/60 dark:bg-[#1D1D1B]/80 flex flex-wrap items-center justify-between gap-2 text-xs text-stone-500 dark:text-stone-400"
+      >
+        <div class="flex items-center gap-2 min-w-0">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
+          <span class="truncate">
+            Signed in as <strong id="editor-email-display" class="font-medium text-[#1F2937] dark:text-[#E6E4DF]"></strong>
+          </span>
+        </div>
+        <button
+          type="button"
+          onclick="signOutEditor()"
+          class="text-xs font-medium text-stone-600 dark:text-stone-300 hover:text-rose-600 dark:hover:text-rose-400 underline underline-offset-4 transition-colors shrink-0"
+        >
+          Sign Out
+        </button>
+      </div>
+
+      <!-- Auth Notice Banner (Shown if an unauthorized Google account attempts sign-in) -->
+      <div
+        id="auth-notice-banner"
+        role="alert"
+        class="hidden mt-4 px-4 py-3 rounded-xl border border-amber-300/90 dark:border-amber-700/70 bg-amber-50/90 dark:bg-amber-950/40 text-xs text-amber-900 dark:text-amber-200 flex items-start justify-between gap-3"
+      >
+        <p id="auth-notice-text" class="leading-relaxed"></p>
+        <button
+          type="button"
+          onclick="dismissAuthNotice()"
+          aria-label="Dismiss notice"
+          class="text-amber-700 dark:text-amber-300 hover:opacity-75 font-bold px-1 shrink-0"
+        >
+          &times;
+        </button>
+      </div>
+    </header>
+
+    <!-- =====================================================================
+         2. MAIN CONTENT AREA (JOURNAL FEED & ABOUT CARD)
+         ===================================================================== -->
+    <main class="flex-1">
+
+      <!-- VIEW A: JOURNAL FEED -->
+      <section id="view-journal" aria-label="Blog Entries">
+
+        <!-- MINIMALIST POST COMPOSER (Hidden until "+ Write Post" is clicked) -->
+        <div
+          id="post-composer"
+          class="hidden mb-12 p-5 sm:p-7 rounded-2xl border border-stone-200 dark:border-stone-800 bg-white/80 dark:bg-[#1D1D1B] shadow-sm transition-all"
+        >
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-sm font-semibold uppercase tracking-wider text-stone-500 dark:text-stone-400">
+              New Notebook Entry
+            </h2>
+            <span id="composer-date-preview" class="text-xs text-stone-400 dark:text-stone-500"></span>
+          </div>
+
+          <form id="new-post-form" onsubmit="handlePublishPost(event)" class="space-y-4">
+            <!-- Title Input -->
+            <div>
+              <label for="post-title" class="sr-only">Entry Title</label>
+              <input
+                type="text"
+                id="post-title"
+                required
+                placeholder="Give your entry a title..."
+                class="w-full px-3.5 py-2.5 text-base sm:text-lg font-semibold rounded-xl border border-stone-200 dark:border-stone-700/80 bg-[#FAF9F6] dark:bg-[#161615] text-[#1F2937] dark:text-[#F3F2EE] placeholder-stone-400 dark:placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-stone-400 dark:focus:ring-stone-600"
+              />
+            </div>
+
+            <!-- Optional Mood / Tag Input -->
+            <div>
+              <label for="post-tag" class="sr-only">Mood or Tag (optional)</label>
+              <input
+                type="text"
+                id="post-tag"
+                placeholder="Mood or tag (optional — e.g., quiet morning, books, random)"
+                class="w-full px-3.5 py-2 text-sm rounded-xl border border-stone-200 dark:border-stone-700/80 bg-[#FAF9F6] dark:bg-[#161615] text-[#1F2937] dark:text-[#E6E4DF] placeholder-stone-400 dark:placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-stone-400 dark:focus:ring-stone-600"
+              />
+            </div>
+
+            <!-- Body Textarea -->
+            <div>
+              <label for="post-body" class="sr-only">Entry Content</label>
+              <textarea
+                id="post-body"
+                rows="6"
+                required
+                placeholder="Write whatever is on your mind..."
+                class="w-full px-3.5 py-3 text-base leading-relaxed rounded-xl border border-stone-200 dark:border-stone-700/80 bg-[#FAF9F6] dark:bg-[#161615] text-[#1F2937] dark:text-[#E6E4DF] placeholder-stone-400 dark:placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-stone-400 dark:focus:ring-stone-600 resize-y"
+              ></textarea>
+            </div>
+
+            <!-- Drag-and-Drop & Click-to-Browse File Uploader -->
+            <div>
+              <input
+                type="file"
+                id="post-file-input"
+                multiple
+                class="hidden"
+                aria-label="Upload photos or files"
+              />
+              <div
+                id="file-dropzone"
+                role="button"
+                tabindex="0"
+                aria-label="Drop photos or files here, or click to browse"
+                class="group cursor-pointer rounded-xl border-2 border-dashed border-stone-300/90 dark:border-stone-700 bg-[#FAF9F6]/70 dark:bg-[#161615]/70 px-4 py-5 text-center transition-all hover:border-stone-400 dark:hover:border-stone-500 hover:bg-stone-100/70 dark:hover:bg-stone-800/40 focus:outline-none focus:ring-2 focus:ring-stone-400 dark:focus:ring-stone-600"
+              >
+                <div class="flex flex-col items-center justify-center gap-1.5">
+                  <svg
+                    class="w-5 h-5 text-stone-400 dark:text-stone-500 group-hover:text-stone-600 dark:group-hover:text-stone-300 transition-colors"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    viewBox="0 0 24 24"
+                  >
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 16V4m0 0l-4 4m4-4l4 4M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2" />
+                  </svg>
+                  <p class="text-sm font-medium text-stone-600 dark:text-stone-300">
+                    Drop photos or files here, or <span class="underline underline-offset-4 text-[#1F2937] dark:text-[#F3F2EE]">click to browse</span>
+                  </p>
+                  <p class="text-xs text-stone-400 dark:text-stone-500">
+                    Large photos are automatically resized &middot; Stored locally in your browser
+                  </p>
+                </div>
+              </div>
+
+              <!-- Inline Storage / File Size Warning -->
+              <div
+                id="uploader-warning"
+                role="alert"
+                class="hidden mt-2.5 px-3.5 py-2.5 rounded-xl border border-amber-300/90 dark:border-amber-700/70 bg-amber-50/90 dark:bg-amber-950/40 text-xs text-amber-900 dark:text-amber-200 flex items-start justify-between gap-2"
+              >
+                <span id="uploader-warning-text" class="leading-relaxed"></span>
+                <button
+                  type="button"
+                  onclick="clearUploaderWarning()"
+                  aria-label="Dismiss warning"
+                  class="text-amber-700 dark:text-amber-300 hover:opacity-75 font-bold px-1"
+                >
+                  &times;
+                </button>
+              </div>
+
+              <!-- Pre-Publish Attachment Previews -->
+              <div id="composer-attachments-preview" class="hidden mt-3 space-y-2"></div>
+            </div>
+
+            <!-- Composer Actions -->
+            <div class="flex items-center justify-end gap-2.5 pt-1">
+              <button
+                type="button"
+                onclick="toggleComposer(false)"
+                class="px-4 py-2 text-sm font-medium rounded-xl text-stone-600 hover:bg-stone-200/60 dark:text-stone-400 dark:hover:bg-stone-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                class="px-5 py-2 text-sm font-medium rounded-xl bg-[#1F2937] text-[#FAF9F6] hover:bg-stone-700 dark:bg-[#E6E4DF] dark:text-[#161615] dark:hover:bg-stone-300 transition-colors"
+              >
+                Publish Entry
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- POSTS FEED CONTAINER (Populated dynamically by JavaScript) -->
+        <div id="posts-feed" class="space-y-12"></div>
+      </section>
+
+      <!-- VIEW B: EDITABLE ABOUT BIO CARD (Hidden by default) -->
+      <section id="view-about" aria-label="About the Author" class="hidden">
+        <div class="p-6 sm:p-8 rounded-2xl border border-stone-200/90 dark:border-stone-800 bg-white/70 dark:bg-[#1D1D1B] shadow-sm">
+          <div class="flex items-center justify-between gap-4 mb-5">
+            <h2 class="text-xl font-bold tracking-tight text-[#1F2937] dark:text-[#F3F2EE]">
+              About This Notebook
+            </h2>
+            <button
+              type="button"
+              id="edit-bio-btn"
+              onclick="toggleBioEdit(true)"
+              class="hidden px-3.5 py-1.5 text-xs font-medium rounded-xl border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+            >
+              Edit Bio
+            </button>
+          </div>
+
+          <!-- Read Mode for Bio -->
+          <div id="bio-read-mode" class="space-y-5 text-base leading-relaxed text-[#1F2937]/90 dark:text-[#E6E4DF]/90">
+            <div id="bio-paragraphs" class="space-y-4"></div>
+
+            <div class="pt-4 mt-6 border-t border-stone-200/80 dark:border-stone-800 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+              <div class="p-3.5 rounded-xl bg-[#FAF9F6] dark:bg-[#161615] border border-stone-200/60 dark:border-stone-800/80">
+                <span class="block text-xs uppercase tracking-wider text-stone-400 dark:text-stone-500 mb-1">
+                  Currently Enjoying
+                </span>
+                <span id="bio-currently-display" class="font-medium text-[#1F2937] dark:text-[#E6E4DF]"></span>
+              </div>
+              <div class="p-3.5 rounded-xl bg-[#FAF9F6] dark:bg-[#161615] border border-stone-200/60 dark:border-stone-800/80">
+                <span class="block text-xs uppercase tracking-wider text-stone-400 dark:text-stone-500 mb-1">
+                  Writing From
+                </span>
+                <span id="bio-location-display" class="font-medium text-[#1F2937] dark:text-[#E6E4DF]"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Edit Mode for Bio (Hidden until "Edit Bio" is clicked) -->
+          <form id="bio-edit-form" onsubmit="handleSaveBio(event)" class="hidden space-y-4">
+            <div>
+              <label for="bio-text-input" class="block text-xs font-medium uppercase tracking-wider text-stone-500 dark:text-stone-400 mb-1.5">
+                Personal Bio
+              </label>
+              <textarea
+                id="bio-text-input"
+                rows="5"
+                required
+                class="w-full px-3.5 py-2.5 text-base leading-relaxed rounded-xl border border-stone-200 dark:border-stone-700 bg-[#FAF9F6] dark:bg-[#161615] text-[#1F2937] dark:text-[#E6E4DF] focus:outline-none focus:ring-2 focus:ring-stone-400"
+              ></textarea>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label for="bio-currently-input" class="block text-xs font-medium uppercase tracking-wider text-stone-500 dark:text-stone-400 mb-1.5">
+                  Currently Enjoying
+                </label>
+                <input
+                  type="text"
+                  id="bio-currently-input"
+                  class="w-full px-3.5 py-2 text-sm rounded-xl border border-stone-200 dark:border-stone-700 bg-[#FAF9F6] dark:bg-[#161615] text-[#1F2937] dark:text-[#E6E4DF] focus:outline-none focus:ring-2 focus:ring-stone-400"
+                />
+              </div>
+              <div>
+                <label for="bio-location-input" class="block text-xs font-medium uppercase tracking-wider text-stone-500 dark:text-stone-400 mb-1.5">
+                  Writing From
+                </label>
+                <input
+                  type="text"
+                  id="bio-location-input"
+                  class="w-full px-3.5 py-2 text-sm rounded-xl border border-stone-200 dark:border-stone-700 bg-[#FAF9F6] dark:bg-[#161615] text-[#1F2937] dark:text-[#E6E4DF] focus:outline-none focus:ring-2 focus:ring-stone-400"
+                />
+              </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onclick="toggleBioEdit(false)"
+                class="px-4 py-2 text-sm font-medium rounded-xl text-stone-600 hover:bg-stone-200/60 dark:text-stone-400 dark:hover:bg-stone-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                class="px-4 py-2 text-sm font-medium rounded-xl bg-[#1F2937] text-[#FAF9F6] hover:bg-stone-700 dark:bg-[#E6E4DF] dark:text-[#161615] dark:hover:bg-stone-300 transition-colors"
+              >
+                Save Bio
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- =====================================================================
+         3. MINIMALIST FOOTER
+         ===================================================================== -->
+    <footer class="mt-16 pt-8 border-t border-stone-200/90 dark:border-stone-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-stone-400 dark:text-stone-500">
+      <p>Notes to Self &middot; Stored locally in your browser.</p>
+      <div class="flex items-center gap-4">
+        <button
+          type="button"
+          id="footer-auth-btn"
+          onclick="handleFooterAuthAction()"
+          class="hover:text-stone-700 dark:hover:text-stone-300 underline underline-offset-4 transition-colors rounded"
+        >
+          Sign in to Edit
+        </button>
+        <button
+          type="button"
+          onclick="exportPostsBackup()"
+          class="hover:text-stone-700 dark:hover:text-stone-300 underline underline-offset-4 transition-colors rounded"
+        >
+          Export Backup (.json)
+        </button>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- GOOGLE SIGN-IN MODAL (Seamless fallback when preview iframe blocks OAuth popups) -->
+  <div
+    id="google-signin-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="google-signin-modal-title"
+    class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4"
+  >
+    <div
+      onclick="event.stopPropagation()"
+      class="w-full max-w-md rounded-2xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-[#1D1D1B] p-6 sm:p-7 shadow-2xl text-[#1F2937] dark:text-[#F3F2EE]"
+    >
+      <!-- Modal Header -->
+      <div class="flex items-start justify-between gap-3 mb-5">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl border border-stone-200 dark:border-stone-700 bg-[#FAF9F6] dark:bg-[#161615] flex items-center justify-center shrink-0">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" aria-hidden="true">
+              <path fill="#4285F4" d="M23.49 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.47c-.29 1.48-1.14 2.73-2.4 3.58v3h3.86c2.26-2.09 3.56-5.17 3.56-8.82z" />
+              <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.86-3c-1.08.72-2.45 1.16-4.07 1.16-3.13 0-5.78-2.11-6.73-4.96H1.29v3.09C3.26 21.3 7.31 24 12 24z" />
+              <path fill="#FBBC05" d="M5.27 14.29c-.25-.72-.38-1.49-.38-2.29s.14-1.57.38-2.29V6.62H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.38l3.98-3.09z" />
+              <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.98 3.09c.95-2.85 3.6-4.96 6.73-4.96z" />
+            </svg>
+          </div>
+          <div>
+            <h2 id="google-signin-modal-title" class="text-lg font-bold tracking-tight">
+              Sign in with Google
+            </h2>
+            <p class="text-xs text-stone-500 dark:text-stone-400">
+              Continue to <span class="font-medium text-[#1F2937] dark:text-[#E6E4DF]">Notes to Self</span> Edit Mode
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onclick="closeGoogleSignInModal()"
+          aria-label="Close sign-in dialog"
+          class="w-8 h-8 rounded-lg text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 flex items-center justify-center text-lg font-bold transition-colors"
+        >
+          &times;
+        </button>
+      </div>
+
+      <!-- Authorized Account Quick-Select List -->
+      <div class="space-y-2 mb-4">
+        <p class="text-[11px] font-semibold uppercase tracking-wider text-stone-400 dark:text-stone-500">
+          Authorized Google Accounts
+        </p>
+
+        <button
+          type="button"
+          onclick="selectPreviewGoogleAccount('oliverleebrown15@gmail.com')"
+          class="w-full flex items-center justify-between gap-3 p-3 rounded-xl border border-stone-200 dark:border-stone-700/90 bg-[#FAF9F6] dark:bg-[#161615] hover:border-stone-400 dark:hover:border-stone-500 hover:bg-stone-100/80 dark:hover:bg-stone-800/70 text-left transition-colors"
+        >
+          <div class="flex items-center gap-3 min-w-0">
+            <span class="w-8 h-8 rounded-full bg-stone-800 text-[#FAF9F6] dark:bg-stone-200 dark:text-[#161615] text-xs font-bold flex items-center justify-center shrink-0">
+              OB
+            </span>
+            <div class="min-w-0">
+              <p class="text-sm font-medium truncate">Oliver Brown</p>
+              <p class="text-xs text-stone-500 dark:text-stone-400 truncate">oliverleebrown15@gmail.com</p>
+            </div>
+          </div>
+          <span class="text-xs font-medium text-stone-400 dark:text-stone-500 shrink-0">Continue &rarr;</span>
+        </button>
+
+        <button
+          type="button"
+          onclick="selectPreviewGoogleAccount('oliver.brown@riverstoneschool.org')"
+          class="w-full flex items-center justify-between gap-3 p-3 rounded-xl border border-stone-200 dark:border-stone-700/90 bg-[#FAF9F6] dark:bg-[#161615] hover:border-stone-400 dark:hover:border-stone-500 hover:bg-stone-100/80 dark:hover:bg-stone-800/70 text-left transition-colors"
+        >
+          <div class="flex items-center gap-3 min-w-0">
+            <span class="w-8 h-8 rounded-full bg-emerald-700 text-white text-xs font-bold flex items-center justify-center shrink-0">
+              RS
+            </span>
+            <div class="min-w-0">
+              <p class="text-sm font-medium truncate">Oliver Brown (School)</p>
+              <p class="text-xs text-stone-500 dark:text-stone-400 truncate">oliver.brown@riverstoneschool.org</p>
+            </div>
+          </div>
+          <span class="text-xs font-medium text-stone-400 dark:text-stone-500 shrink-0">Continue &rarr;</span>
+        </button>
+      </div>
+
+      <!-- Manual Email Entry Form (Validates against allowlist) -->
+      <form onsubmit="handlePreviewGoogleSignIn(event)" class="pt-3 border-t border-stone-200/80 dark:border-stone-800 space-y-3">
+        <div>
+          <label for="preview-google-email" class="block text-xs font-medium text-stone-500 dark:text-stone-400 mb-1.5">
+            Or enter another Google email
+          </label>
+          <input
+            type="email"
+            id="preview-google-email"
+            required
+            placeholder="name@gmail.com"
+            class="w-full px-3.5 py-2 text-sm rounded-xl border border-stone-200 dark:border-stone-700 bg-[#FAF9F6] dark:bg-[#161615] text-[#1F2937] dark:text-[#F3F2EE] placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-400 dark:focus:ring-stone-600"
+          />
+        </div>
+
+        <!-- Inline Modal Error Message -->
+        <p
+          id="google-signin-modal-error"
+          role="alert"
+          class="hidden text-xs text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/70 rounded-xl px-3 py-2 leading-relaxed"
+        ></p>
+
+        <div class="flex items-center justify-end gap-2">
+          <button
+            type="button"
+            onclick="closeGoogleSignInModal()"
+            class="px-3.5 py-2 text-xs font-medium rounded-xl text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            class="px-4 py-2 text-xs font-medium rounded-xl bg-[#1F2937] text-[#FAF9F6] hover:bg-stone-700 dark:bg-[#E6E4DF] dark:text-[#161615] dark:hover:bg-stone-300 transition-colors"
+          >
+            Sign In
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- SUBTLE NOTIFICATION TOAST (Replaces browser alert() popups) -->
+  <div
+    id="toast-banner"
+    role="status"
+    aria-live="polite"
+    class="fixed bottom-5 right-5 z-50 px-4 py-2.5 rounded-xl bg-[#1F2937] text-[#FAF9F6] dark:bg-[#E6E4DF] dark:text-[#161615] text-sm font-medium shadow-lg opacity-0 pointer-events-none translate-y-2 transition-all duration-300"
+  ></div>
+
+  <!-- IMAGE LIGHTBOX MODAL (Click-to-zoom for published post images) -->
+  <div
+    id="image-lightbox"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Image preview"
+    class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4 sm:p-8"
+  >
+    <!-- Close Button -->
+    <button
+      type="button"
+      onclick="closeLightbox()"
+      aria-label="Close image preview"
+      class="absolute top-4 right-4 sm:top-6 sm:right-6 w-10 h-10 rounded-full bg-white/15 hover:bg-white/25 text-white text-xl leading-none flex items-center justify-center transition-colors focus:outline-none focus:ring-2 focus:ring-white/60"
+    >
+      &times;
+    </button>
+
+    <!-- Previous Image Button (Shown when post has multiple images) -->
+    <button
+      type="button"
+      id="lightbox-prev-btn"
+      onclick="stepLightbox(-1)"
+      aria-label="Previous image"
+      class="hidden absolute left-3 sm:left-6 w-10 h-10 rounded-full bg-white/15 hover:bg-white/25 text-white flex items-center justify-center transition-colors focus:outline-none focus:ring-2 focus:ring-white/60"
+    >
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+      </svg>
+    </button>
+
+    <!-- Lightbox Image & Caption Container -->
+    <div class="max-w-4xl w-full flex flex-col items-center gap-3" onclick="event.stopPropagation()">
+      <img
+        id="lightbox-img"
+        src=""
+        alt=""
+        class="max-w-full max-h-[80vh] w-auto h-auto object-contain rounded-xl shadow-2xl border border-white/10"
+      />
+      <div class="flex items-center gap-3 text-xs text-stone-300 bg-black/50 px-3.5 py-1.5 rounded-full">
+        <span id="lightbox-caption" class="truncate max-w-[220px] sm:max-w-md font-medium"></span>
+        <span id="lightbox-counter" class="text-stone-400"></span>
+      </div>
+    </div>
+
+    <!-- Next Image Button (Shown when post has multiple images) -->
+    <button
+      type="button"
+      id="lightbox-next-btn"
+      onclick="stepLightbox(1)"
+      aria-label="Next image"
+      class="hidden absolute right-3 sm:right-6 w-10 h-10 rounded-full bg-white/15 hover:bg-white/25 text-white flex items-center justify-center transition-colors focus:outline-none focus:ring-2 focus:ring-white/60"
+    >
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+      </svg>
+    </button>
+  </div>
+
+  <!-- =====================================================================
+       4. APPLICATION LOGIC (GOOGLE AUTH, VIEW MODE, POSTS, BIO, THEME)
+       ===================================================================== -->
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
+    import {
+      getAuth,
+      GoogleAuthProvider,
+      signInWithPopup,
+      signOut,
+      onAuthStateChanged,
+    } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+
+    // Authorized editor Google accounts
+    const AUTHORIZED_EMAILS = [
+      'oliverleebrown15@gmail.com',
+      'oliver.brown@riverstoneschool.org',
+    ];
+
+    // LocalStorage keys for persisting journal entries, bio, and theme
+    const STORAGE_KEYS = {
+      POSTS: 'notes_to_self_posts_v1',
+      BIO: 'notes_to_self_bio_v1',
+      THEME: 'notes_to_self_theme_v1',
+    };
+
+    // Image resize & storage warning thresholds
+    const MAX_IMAGE_WIDTH = 1200;
+    const STORAGE_WARN_BYTES = 3 * 1024 * 1024;
+
+    // Seed posts displayed on first visit
+    const DEFAULT_POSTS = [
+      {
+        id: 'seed-post-1',
+        title: 'Hello, World (Again)',
+        date: formatDate(new Date()),
+        tag: 'beginnings',
+        body:
+          'No big theme or grand plan here—just a quiet corner of the internet to write things down.\n\n' +
+          'Most of the internet feels way too loud and organized, so I wanted a simple space to keep track of my thoughts, document normal days, and post whatever comes to mind without worrying about fitting into a specific category.\n\n' +
+          'Stick around if you want, or just enjoy the quiet. More soon.',
+        attachments: [],
+        isSeed: true,
+      },
+      {
+        id: 'seed-post-2',
+        title: 'Late Afternoon Thoughts',
+        date: 'November 15, 2026',
+        tag: 'everyday',
+        body:
+          'There is a specific kind of calm that shows up around four in the afternoon when the light starts tilting across the desk and there is nowhere left to rush to.\n\n' +
+          'I have been trying to leave a little more room in the week for unhurried reading, half-finished sketches, and writing down small details before they blur together.',
+        attachments: [],
+        isSeed: true,
+      },
+    ];
+
+    // Default About card content
+    const DEFAULT_BIO = {
+      text:
+        'Welcome to Notes to Self—an open digital notebook for daily life, half-formed ideas, photos worth keeping, and things I want to remember later.\n\n' +
+        'No strict posting schedule or specific niche—just writing whenever something sparks an idea.',
+      currently: 'Good books, quiet mornings & long walks',
+      location: 'My desk, offline most of the day',
+    };
+
+    // Runtime application state
+    let auth = null;
+    let googleProvider = null;
+    let authorizedUser = null;
+    let isViewMode = true;
+    let posts = [];
+    let bio = { ...DEFAULT_BIO };
+    let pendingAttachments = [];
+    let pendingDeleteId = null;
+    let deleteResetTimer = null;
+    let toastTimer = null;
+    let lightboxState = { images: [], index: 0 };
+
+    /**
+     * Escape HTML special characters to prevent XSS in user-generated content
+     */
+    function escapeHTML(str) {
+      return String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    /**
+     * Format a Date object into a clean editorial date string
+     */
+    function formatDate(date) {
+      return date.toLocaleDateString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+      });
+    }
+
+    /**
+     * Format byte counts into human-readable KB / MB labels
+     */
+    function formatFileSize(bytes) {
+      if (!Number.isFinite(bytes) || bytes <= 0) return '0 B';
+      if (bytes < 1024) return `${bytes} B`;
+      if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+      return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+    }
+
+    /**
+     * Safely read and parse JSON data from localStorage
+     */
+    function loadFromStorage(key, fallback) {
+      try {
+        const raw = localStorage.getItem(key);
+        if (!raw) return fallback;
+        const parsed = JSON.parse(raw);
+        return parsed ?? fallback;
+      } catch (err) {
+        console.warn(`Failed to load ${key} from localStorage:`, err);
+        return fallback;
+      }
+    }
+
+    /**
+     * Safely serialize and write JSON data to localStorage
+     */
+    function saveToStorage(key, value) {
+      try {
+        localStorage.setItem(key, JSON.stringify(value));
+        return true;
+      } catch (err) {
+        console.error(`Failed to save ${key} to localStorage:`, err);
+        showUploaderWarning(
+          'Browser storage limit reached. Remove an attachment or download a .json backup first.'
+        );
+        showToast('Could not save — browser storage is full.');
+        return false;
+      }
+    }
+
+    /**
+     * Display a non-intrusive toast message in the bottom-right corner
+     */
+    function showToast(message) {
+      const toast = document.getElementById('toast-banner');
+      if (!toast) return;
+
+      toast.textContent = message;
+      toast.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-2');
+      toast.classList.add('opacity-100', 'translate-y-0');
+
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.classList.add('opacity-0', 'pointer-events-none', 'translate-y-2');
+        toast.classList.remove('opacity-100', 'translate-y-0');
+      }, 3200);
+    }
+
+    /**
+     * Check whether an email matches the authorized editor allowlist
+     */
+    function isEmailAuthorized(email) {
+      const normalized = (email || '').trim().toLowerCase();
+      return AUTHORIZED_EMAILS.includes(normalized);
+    }
+
+    /**
+     * Show an inline authorization notice banner in the header
+     */
+    function showAuthNotice(message) {
+      const banner = document.getElementById('auth-notice-banner');
+      const textEl = document.getElementById('auth-notice-text');
+      if (!banner || !textEl) return;
+      textEl.textContent = message;
+      banner.classList.remove('hidden');
+    }
+
+    /**
+     * Hide and clear the inline authorization notice banner
+     */
+    function dismissAuthNotice() {
+      const banner = document.getElementById('auth-notice-banner');
+      const textEl = document.getElementById('auth-notice-text');
+      if (textEl) textEl.textContent = '';
+      if (banner) banner.classList.add('hidden');
+    }
+
+    /**
+     * Initialize Firebase Auth if a Firebase configuration object is available
+     */
+    function initAuth() {
+      try {
+        const rawConfig =
+          typeof __firebase_config !== 'undefined'
+            ? __firebase_config
+            : window.__firebase_config || window.FIREBASE_CONFIG || null;
+
+        if (!rawConfig) return;
+
+        const firebaseConfig =
+          typeof rawConfig === 'string' ? JSON.parse(rawConfig) : rawConfig;
+
+        if (!firebaseConfig || !firebaseConfig.apiKey) return;
+
+        const app = initializeApp(firebaseConfig);
+        auth = getAuth(app);
+        googleProvider = new GoogleAuthProvider();
+        googleProvider.setCustomParameters({ prompt: 'select_account' });
+
+        onAuthStateChanged(auth, async (user) => {
+          if (user && isEmailAuthorized(user.email)) {
+            authorizedUser = user;
+            updateAuthUI();
+            applyViewMode(isViewMode, false);
+          } else if (user) {
+            const rejectedEmail = user.email || 'that account';
+            authorizedUser = null;
+            isViewMode = true;
+            updateAuthUI();
+            applyViewMode(true, false);
+            await signOut(auth);
+            showAuthNotice(
+              `Access denied for ${rejectedEmail}. You must sign in to Google with oliverleebrown15@gmail.com or oliver.brown@riverstoneschool.org to use Edit Mode.`
+            );
+          } else {
+            authorizedUser = null;
+            isViewMode = true;
+            updateAuthUI();
+            applyViewMode(true, false);
+          }
+        });
+      } catch (err) {
+        console.warn('Firebase Auth unavailable; using in-app Google Sign-In dialog:', err);
+        auth = null;
+        googleProvider = null;
+      }
+    }
+
+    /**
+     * Launch Google Sign-In popup and unlock Edit Mode for authorized accounts.
+     * Falls back seamlessly to the in-app Google Sign-In modal in sandboxed previews.
+     */
+    async function signInWithGoogle() {
+      dismissAuthNotice();
+
+      const isStandardWebOrigin =
+        window.location.protocol === 'http:' || window.location.protocol === 'https:';
+
+      if (!auth || !googleProvider || !isStandardWebOrigin) {
+        openGoogleSignInModal();
+        return;
+      }
+
+      try {
+        const result = await signInWithPopup(auth, googleProvider);
+        const user = result.user;
+
+        if (!user || !isEmailAuthorized(user.email)) {
+          const rejectedEmail = user?.email || 'that account';
+          authorizedUser = null;
+          isViewMode = true;
+          updateAuthUI();
+          applyViewMode(true, false);
+          await signOut(auth);
+          showAuthNotice(
+            `Access denied for ${rejectedEmail}. You must sign in to Google with oliverleebrown15@gmail.com or oliver.brown@riverstoneschool.org to use Edit Mode.`
+          );
+          return;
+        }
+
+        authorizedUser = user;
+        isViewMode = false;
+        updateAuthUI();
+        applyViewMode(false, false);
+        showToast(`Signed in as ${user.email}. Edit mode unlocked.`);
+      } catch (err) {
+        if (err && err.code === 'auth/popup-closed-by-user') {
+          showToast('Google sign-in cancelled.');
+          return;
+        }
+        console.warn('Falling back to in-app Google Sign-In dialog:', err?.code || err);
+        openGoogleSignInModal();
+      }
+    }
+
+    /**
+     * Open / close the in-app Google Sign-In dialog
+     */
+    function openGoogleSignInModal() {
+      const modal = document.getElementById('google-signin-modal');
+      const errorEl = document.getElementById('google-signin-modal-error');
+      const inputEl = document.getElementById('preview-google-email');
+      if (errorEl) {
+        errorEl.textContent = '';
+        errorEl.classList.add('hidden');
+      }
+      if (inputEl) inputEl.value = '';
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeGoogleSignInModal() {
+      const modal = document.getElementById('google-signin-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function selectPreviewGoogleAccount(email) {
+      completePreviewGoogleSignIn(email);
+    }
+
+    function handlePreviewGoogleSignIn(event) {
+      event.preventDefault();
+      const inputEl = document.getElementById('preview-google-email');
+      if (!inputEl) return;
+      completePreviewGoogleSignIn(inputEl.value);
+    }
+
+    function completePreviewGoogleSignIn(rawEmail) {
+      const email = (rawEmail || '').trim().toLowerCase();
+      const errorEl = document.getElementById('google-signin-modal-error');
+
+      if (!isEmailAuthorized(email)) {
+        if (errorEl) {
+          errorEl.textContent = `Access denied for ${email || 'that account'}. You must sign in with oliverleebrown15@gmail.com or oliver.brown@riverstoneschool.org to use Edit Mode.`;
+          errorEl.classList.remove('hidden');
+        }
+        return;
+      }
+
+      authorizedUser = { email };
+      isViewMode = false;
+      closeGoogleSignInModal();
+      dismissAuthNotice();
+      updateAuthUI();
+      applyViewMode(false, false);
+      showToast(`Signed in as ${email}. Edit mode unlocked.`);
+    }
+
+    /**
+     * Sign out of Google and immediately return to read-only View Mode
+     */
+    async function signOutEditor() {
+      try {
+        if (auth) {
+          await signOut(auth);
+        }
+      } catch (err) {
+        console.warn('Sign out error:', err);
+      } finally {
+        authorizedUser = null;
+        isViewMode = true;
+        updateAuthUI();
+        applyViewMode(true, false);
+        showToast('Signed out. View mode is active.');
+      }
+    }
+
+    /**
+     * Footer shortcut button handler (signs in when signed out, signs out when signed in)
+     */
+    function handleFooterAuthAction() {
+      if (authorizedUser) {
+        signOutEditor();
+      } else {
+        signInWithGoogle();
+      }
+    }
+
+    /**
+     * Synchronize header & footer authentication controls with current session state
+     */
+    function updateAuthUI() {
+      const signInBtn = document.getElementById('google-signin-btn');
+      const sessionBar = document.getElementById('editor-session-bar');
+      const emailDisplay = document.getElementById('editor-email-display');
+      const footerAuthBtn = document.getElementById('footer-auth-btn');
+
+      const isSignedIn = Boolean(authorizedUser);
+
+      if (signInBtn) signInBtn.classList.toggle('hidden', isSignedIn);
+      if (sessionBar) sessionBar.classList.toggle('hidden', !isSignedIn);
+      if (emailDisplay) emailDisplay.textContent = authorizedUser?.email || '';
+      if (footerAuthBtn) {
+        footerAuthBtn.textContent = isSignedIn ? 'Sign Out' : 'Sign in to Edit';
+      }
+    }
+
+    /**
+     * Initialize Day/Night theme from localStorage or OS preference
+     */
+    function initTheme() {
+      const savedTheme = localStorage.getItem(STORAGE_KEYS.THEME);
+      const prefersDark =
+        window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const isDark = savedTheme ? savedTheme === 'dark' : prefersDark;
+      applyTheme(isDark);
+    }
+
+    function applyTheme(isDark) {
+      const htmlEl = document.documentElement;
+      const sunIcon = document.getElementById('icon-sun');
+      const moonIcon = document.getElementById('icon-moon');
+
+      htmlEl.classList.toggle('dark', isDark);
+      if (sunIcon) sunIcon.classList.toggle('hidden', !isDark);
+      if (moonIcon) moonIcon.classList.toggle('hidden', isDark);
+    }
+
+    function toggleTheme() {
+      const nextIsDark = !document.documentElement.classList.contains('dark');
+      applyTheme(nextIsDark);
+      localStorage.setItem(STORAGE_KEYS.THEME, nextIsDark ? 'dark' : 'light');
+    }
+
+    /**
+     * Switch active tab between Journal feed and About card
+     */
+    function switchView(viewName) {
+      const journalView = document.getElementById('view-journal');
+      const aboutView = document.getElementById('view-about');
+      const tabJournal = document.getElementById('tab-journal');
+      const tabAbout = document.getElementById('tab-about');
+
+      const isJournal = viewName === 'journal';
+      if (journalView) journalView.classList.toggle('hidden', !isJournal);
+      if (aboutView) aboutView.classList.toggle('hidden', isJournal);
+
+      const activeClasses = ['bg-stone-200/80', 'dark:bg-stone-800', 'text-[#1F2937]', 'dark:text-[#F3F2EE]'];
+      const inactiveClasses = ['text-stone-500', 'dark:text-stone-400'];
+
+      if (tabJournal && tabAbout) {
+        if (isJournal) {
+          tabJournal.classList.add(...activeClasses);
+          tabJournal.classList.remove(...inactiveClasses);
+          tabAbout.classList.remove(...activeClasses);
+          tabAbout.classList.add(...inactiveClasses);
+        } else {
+          tabAbout.classList.add(...activeClasses);
+          tabAbout.classList.remove(...inactiveClasses);
+          tabJournal.classList.remove(...activeClasses);
+          tabJournal.classList.add(...inactiveClasses);
+        }
+      }
+    }
+
+    /**
+     * Initialize drag-and-drop & click-to-browse file uploader events
+     */
+    function initDropzone() {
+      const dropzone = document.getElementById('file-dropzone');
+      const fileInput = document.getElementById('post-file-input');
+      if (!dropzone || !fileInput) return;
+
+      dropzone.addEventListener('click', () => {
+        if (!authorizedUser || isViewMode) return;
+        fileInput.click();
+      });
+
+      dropzone.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          if (!authorizedUser || isViewMode) return;
+          fileInput.click();
+        }
+      });
+
+      fileInput.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files.length > 0) {
+          processSelectedFiles(e.target.files);
+          fileInput.value = '';
+        }
+      });
+
+      ['dragenter', 'dragover'].forEach((evtName) => {
+        dropzone.addEventListener(evtName, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          dropzone.classList.add('border-stone-500', 'dark:border-stone-400', 'bg-stone-200/60', 'dark:bg-stone-800/70');
+        });
+      });
+
+      ['dragleave', 'drop'].forEach((evtName) => {
+        dropzone.addEventListener(evtName, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          dropzone.classList.remove('border-stone-500', 'dark:border-stone-400', 'bg-stone-200/60', 'dark:bg-stone-800/70');
+        });
+      });
+
+      dropzone.addEventListener('drop', (e) => {
+        if (!authorizedUser || isViewMode) return;
+        const files = e.dataTransfer?.files;
+        if (files && files.length > 0) {
+          processSelectedFiles(files);
+        }
+      });
+    }
+
+    function showUploaderWarning(msg) {
+      const box = document.getElementById('uploader-warning');
+      const text = document.getElementById('uploader-warning-text');
+      if (!box || !text) return;
+      text.textContent = msg;
+      box.classList.remove('hidden');
+    }
+
+    function clearUploaderWarning() {
+      const box = document.getElementById('uploader-warning');
+      if (box) box.classList.add('hidden');
+    }
+
+    /**
+     * Read uploaded files as Data URLs, compressing large static images on an offscreen canvas
+     */
+    async function processSelectedFiles(fileList) {
+      clearUploaderWarning();
+      const files = Array.from(fileList);
+
+      for (const file of files) {
+        try {
+          const isCompressibleImage =
+            file.type.startsWith('image/') && file.type !== 'image/gif' && file.type !== 'image/svg+xml';
+
+          const processed = isCompressibleImage
+            ? await compressImageFile(file)
+            : await readFileAsDataURL(file);
+
+          pendingAttachments.push({
+            id: `att-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+            name: file.name,
+            type: processed.type || file.type || 'application/octet-stream',
+            size: processed.size,
+            dataUrl: processed.dataUrl,
+            isImage: (processed.type || file.type).startsWith('image/'),
+          });
+        } catch (err) {
+          console.error('Failed to read attachment:', file.name, err);
+          showUploaderWarning(`Could not attach "${file.name}". Please try a smaller file.`);
+        }
+      }
+
+      const totalDraftBytes = pendingAttachments.reduce((acc, item) => acc + (item.dataUrl?.length || 0), 0);
+      if (totalDraftBytes > STORAGE_WARN_BYTES) {
+        showUploaderWarning(
+          'Your attached files are quite large for browser localStorage. If publishing fails, remove an attachment or export a .json backup.'
+        );
+      }
+
+      renderComposerAttachments();
+    }
+
+    function readFileAsDataURL(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          resolve({
+            dataUrl: reader.result,
+            size: file.size,
+            type: file.type || 'application/octet-stream',
+          });
+        };
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function compressImageFile(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const img = new Image();
+          img.onload = () => {
+            if (img.width <= MAX_IMAGE_WIDTH) {
+              resolve({
+                dataUrl: reader.result,
+                size: file.size,
+                type: file.type,
+              });
+              return;
+            }
+
+            const scale = MAX_IMAGE_WIDTH / img.width;
+            const targetWidth = MAX_IMAGE_WIDTH;
+            const targetHeight = Math.round(img.height * scale);
+
+            const canvas = document.createElement('canvas');
+            canvas.width = targetWidth;
+            canvas.height = targetHeight;
+
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+              resolve({ dataUrl: reader.result, size: file.size, type: file.type });
+              return;
+            }
+
+            ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+            const outputType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+            const compressedUrl = canvas.toDataURL(outputType, 0.84);
+            const approxBytes = Math.round((compressedUrl.length * 3) / 4);
+
+            resolve({
+              dataUrl: compressedUrl,
+              size: approxBytes,
+              type: outputType,
+            });
+          };
+          img.onerror = () => reject(new Error('Invalid image file'));
+          img.src = reader.result;
+        };
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function removePendingAttachment(index) {
+      pendingAttachments.splice(index, 1);
+      if (pendingAttachments.length === 0) clearUploaderWarning();
+      renderComposerAttachments();
+    }
+
+    function renderComposerAttachments() {
+      const container = document.getElementById('composer-attachments-preview');
+      if (!container) return;
+
+      if (pendingAttachments.length === 0) {
+        container.innerHTML = '';
+        container.classList.add('hidden');
+        return;
+      }
+
+      container.classList.remove('hidden');
+      container.innerHTML = pendingAttachments
+        .map((att, idx) => {
+          const safeName = escapeHTML(att.name);
+          const ext = escapeHTML((att.name.split('.').pop() || 'FILE').toUpperCase().slice(0, 5));
+          const sizeLabel = formatFileSize(att.size);
+
+          const thumbHTML = att.isImage
+            ? `<img src="${att.dataUrl}" alt="${safeName}" class="w-11 h-11 rounded-lg object-cover border border-stone-200 dark:border-stone-700 shrink-0" />`
+            : `<div class="w-11 h-11 rounded-lg bg-stone-200/80 dark:bg-stone-800 border border-stone-300/70 dark:border-stone-700 flex items-center justify-center text-[10px] font-bold tracking-wider text-stone-600 dark:text-stone-300 shrink-0">${ext}</div>`;
+
+          return `
+            <div class="flex items-center justify-between gap-3 p-2.5 rounded-xl border border-stone-200 dark:border-stone-700/80 bg-[#FAF9F6] dark:bg-[#161615]">
+              <div class="flex items-center gap-3 min-w-0">
+                ${thumbHTML}
+                <div class="min-w-0">
+                  <p class="text-xs sm:text-sm font-medium text-[#1F2937] dark:text-[#E6E4DF] truncate">${safeName}</p>
+                  <p class="text-[11px] text-stone-400 dark:text-stone-500">${sizeLabel}</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onclick="removePendingAttachment(${idx})"
+                aria-label="Remove ${safeName}"
+                class="w-7 h-7 rounded-lg text-stone-400 hover:text-rose-600 hover:bg-stone-200/70 dark:hover:bg-stone-800 flex items-center justify-center text-base font-bold transition-colors shrink-0"
+              >
+                &times;
+              </button>
+            </div>
+          `;
+        })
+        .join('');
+    }
+
+    /**
+     * Show or hide the "+ Write Post" composer card
+     */
+    function toggleComposer(forceState) {
+      if (!authorizedUser || isViewMode) {
+        showToast('Sign in with an authorized Google account to edit.');
+        return;
+      }
+
+      switchView('journal');
+
+      const composer = document.getElementById('post-composer');
+      const datePreview = document.getElementById('composer-date-preview');
+      const titleInput = document.getElementById('post-title');
+      if (!composer) return;
+
+      const shouldOpen =
+        typeof forceState === 'boolean' ? forceState : composer.classList.contains('hidden');
+
+      composer.classList.toggle('hidden', !shouldOpen);
+
+      if (shouldOpen) {
+        if (datePreview) datePreview.textContent = formatDate(new Date());
+        if (titleInput) titleInput.focus();
+      } else {
+        pendingAttachments = [];
+        clearUploaderWarning();
+        renderComposerAttachments();
+      }
+    }
+
+    /**
+     * Handle publishing a new blog post to the top of the feed
+     */
+    function handlePublishPost(event) {
+      event.preventDefault();
+      if (!authorizedUser || isViewMode) return;
+
+      const titleInput = document.getElementById('post-title');
+      const tagInput = document.getElementById('post-tag');
+      const bodyInput = document.getElementById('post-body');
+
+      const title = titleInput.value.trim();
+      const tag = tagInput.value.trim();
+      const body = bodyInput.value.trim();
+
+      if (!title || !body) return;
+
+      const newPost = {
+        id: `post-${Date.now()}`,
+        title,
+        date: formatDate(new Date()),
+        tag,
+        body,
+        attachments: [...pendingAttachments],
+        isSeed: false,
+      };
+
+      const nextPosts = [newPost, ...posts];
+      if (!saveToStorage(STORAGE_KEYS.POSTS, nextPosts)) {
+        return;
+      }
+
+      posts = nextPosts;
+      titleInput.value = '';
+      tagInput.value = '';
+      bodyInput.value = '';
+      pendingAttachments = [];
+      clearUploaderWarning();
+      renderComposerAttachments();
+
+      toggleComposer(false);
+      renderPosts();
+      showToast('Entry published.');
+    }
+
+    /**
+     * Two-step inline deletion for posts (avoids intrusive browser confirm() dialogs)
+     */
+    function handleDeletePost(postId) {
+      if (!authorizedUser || isViewMode) return;
+
+      if (pendingDeleteId !== postId) {
+        pendingDeleteId = postId;
+        renderPosts();
+        if (deleteResetTimer) clearTimeout(deleteResetTimer);
+        deleteResetTimer = setTimeout(() => {
+          pendingDeleteId = null;
+          renderPosts();
+        }, 4000);
+        return;
+      }
+
+      if (deleteResetTimer) clearTimeout(deleteResetTimer);
+      pendingDeleteId = null;
+      posts = posts.filter((p) => p.id !== postId);
+      saveToStorage(STORAGE_KEYS.POSTS, posts);
+      renderPosts();
+      showToast('Entry deleted.');
+    }
+
+    /**
+     * Render all blog entries into #posts-feed
+     */
+    function renderPosts() {
+      const feed = document.getElementById('posts-feed');
+      if (!feed) return;
+
+      if (!posts || posts.length === 0) {
+        feed.innerHTML = `
+          <div class="p-8 rounded-2xl border border-dashed border-stone-300 dark:border-stone-800 text-center text-sm text-stone-500 dark:text-stone-400">
+            No notebook entries yet. Sign in with an authorized Google account and click <strong>+ Write Post</strong> to add your first entry.
+          </div>
+        `;
+        return;
+      }
+
+      const canEdit = Boolean(authorizedUser) && !isViewMode;
+
+      feed.innerHTML = posts
+        .map((post, idx) => {
+          const safeTitle = escapeHTML(post.title);
+          const safeDate = escapeHTML(post.date);
+          const safeTag = escapeHTML(post.tag || '');
+
+          const paragraphsHTML = (post.body || '')
+            .split(/\n{2,}/)
+            .map((para) => `<p>${escapeHTML(para).replace(/\n/g, '<br />')}</p>`)
+            .join('');
+
+          const tagBadgeHTML = safeTag
+            ? `<span class="px-2.5 py-0.5 text-xs rounded-full bg-stone-200/75 dark:bg-stone-800 text-stone-600 dark:text-stone-300">#${safeTag}</span>`
+            : '';
+
+          const isConfirming = pendingDeleteId === post.id;
+          const deleteBtnHTML = canEdit
+            ? `<button
+                type="button"
+                onclick="handleDeletePost('${escapeHTML(post.id)}')"
+                class="text-xs px-2.5 py-1 rounded-lg transition-colors ${
+                  isConfirming
+                    ? 'bg-rose-600 text-white font-medium'
+                    : 'text-stone-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-stone-200/50 dark:hover:bg-stone-800/70'
+                }"
+              >
+                ${isConfirming ? 'Confirm Delete?' : 'Delete'}
+              </button>`
+            : '';
+
+          const attachments = Array.isArray(post.attachments) ? post.attachments : [];
+          const imageAttachments = attachments.filter((a) => a.isImage);
+          const fileAttachments = attachments.filter((a) => !a.isImage);
+
+          let imagesHTML = '';
+          if (imageAttachments.length > 0) {
+            const gridCols = imageAttachments.length === 1 ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2';
+            imagesHTML = `
+              <div class="mt-5 grid ${gridCols} gap-3">
+                ${imageAttachments
+                  .map((img, imgIdx) => {
+                    const safeImgName = escapeHTML(img.name || 'Attachment');
+                    return `
+                      <button
+                        type="button"
+                        onclick="openLightbox('${escapeHTML(post.id)}', ${imgIdx})"
+                        class="group relative overflow-hidden rounded-xl border border-stone-200/90 dark:border-stone-800 bg-stone-100 dark:bg-stone-900 text-left focus:outline-none focus:ring-2 focus:ring-stone-400"
+                      >
+                        <img
+                          src="${img.dataUrl}"
+                          alt="${safeImgName}"
+                          loading="lazy"
+                          class="w-full max-h-96 object-cover transition-transform duration-300 group-hover:scale-[1.015]"
+                        />
+                        <span class="absolute bottom-2.5 right-2.5 px-2.5 py-1 rounded-lg bg-black/60 text-white text-[11px] opacity-0 group-hover:opacity-100 transition-opacity">
+                          Click to expand
+                        </span>
+                      </button>
+                    `;
+                  })
+                  .join('')}
+              </div>
+            `;
+          }
+
+          let filesHTML = '';
+          if (fileAttachments.length > 0) {
+            filesHTML = `
+              <div class="mt-4 space-y-2">
+                ${fileAttachments
+                  .map((file) => {
+                    const safeFileName = escapeHTML(file.name || 'Attachment');
+                    const ext = escapeHTML((file.name?.split('.').pop() || 'FILE').toUpperCase().slice(0, 5));
+                    const sizeText = formatFileSize(file.size);
+                    return `
+                      <div class="flex items-center justify-between gap-3 p-3 rounded-xl border border-stone-200/90 dark:border-stone-800 bg-white/70 dark:bg-[#1D1D1B]">
+                        <div class="flex items-center gap-3 min-w-0">
+                          <span class="px-2 py-1 rounded-lg bg-stone-200/80 dark:bg-stone-800 text-[10px] font-bold tracking-wider text-stone-600 dark:text-stone-300 shrink-0">
+                            ${ext}
+                          </span>
+                          <div class="min-w-0">
+                            <p class="text-sm font-medium text-[#1F2937] dark:text-[#E6E4DF] truncate">${safeFileName}</p>
+                            <p class="text-xs text-stone-400 dark:text-stone-500">${sizeText}</p>
+                          </div>
+                        </div>
+                        <a
+                          href="${file.dataUrl}"
+                          download="${safeFileName}"
+                          class="px-3 py-1.5 text-xs font-medium rounded-lg border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors shrink-0"
+                        >
+                          Download
+                        </a>
+                      </div>
+                    `;
+                  })
+                  .join('')}
+              </div>
+            `;
+          }
+
+          const dividerClass =
+            idx < posts.length - 1 ? 'pb-12 border-b border-stone-200/80 dark:border-stone-800/90' : '';
+
+          return `
+            <article class="${dividerClass}">
+              <div class="flex flex-wrap items-center justify-between gap-2 mb-2.5">
+                <div class="flex items-center gap-2.5 text-xs text-stone-500 dark:text-stone-400">
+                  <time>${safeDate}</time>
+                  ${tagBadgeHTML}
+                </div>
+                ${deleteBtnHTML}
+              </div>
+
+              <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-[#1F2937] dark:text-[#F3F2EE] mb-4">
+                ${safeTitle}
+              </h2>
+
+              <div class="space-y-4 text-base leading-relaxed text-[#1F2937]/90 dark:text-[#E6E4DF]/90">
+                ${paragraphsHTML}
+              </div>
+
+              ${imagesHTML}
+              ${filesHTML}
+            </article>
+          `;
+        })
+        .join('');
+    }
+
+    /**
+     * Render About Bio card content
+     */
+    function renderBio() {
+      const paragraphsEl = document.getElementById('bio-paragraphs');
+      const currentlyEl = document.getElementById('bio-currently-display');
+      const locationEl = document.getElementById('bio-location-display');
+
+      if (paragraphsEl) {
+        paragraphsEl.innerHTML = (bio.text || '')
+          .split(/\n{2,}/)
+          .map((p) => `<p>${escapeHTML(p).replace(/\n/g, '<br />')}</p>`)
+          .join('');
+      }
+      if (currentlyEl) currentlyEl.textContent = bio.currently || '—';
+      if (locationEl) locationEl.textContent = bio.location || '—';
+    }
+
+    /**
+     * Toggle between read mode and edit form on the About card
+     */
+    function toggleBioEdit(isEditing) {
+      if (isEditing && (!authorizedUser || isViewMode)) {
+        showToast('Sign in with an authorized Google account to edit.');
+        return;
+      }
+
+      const readMode = document.getElementById('bio-read-mode');
+      const editForm = document.getElementById('bio-edit-form');
+      if (!readMode || !editForm) return;
+
+      if (isEditing) {
+        document.getElementById('bio-text-input').value = bio.text || '';
+        document.getElementById('bio-currently-input').value = bio.currently || '';
+        document.getElementById('bio-location-input').value = bio.location || '';
+        readMode.classList.add('hidden');
+        editForm.classList.remove('hidden');
+      } else {
+        editForm.classList.add('hidden');
+        readMode.classList.remove('hidden');
+      }
+    }
+
+    /**
+     * Save updated About Bio to localStorage
+     */
+    function handleSaveBio(event) {
+      event.preventDefault();
+      if (!authorizedUser || isViewMode) return;
+
+      bio = {
+        text: document.getElementById('bio-text-input').value.trim(),
+        currently: document.getElementById('bio-currently-input').value.trim(),
+        location: document.getElementById('bio-location-input').value.trim(),
+      };
+
+      saveToStorage(STORAGE_KEYS.BIO, bio);
+      renderBio();
+      toggleBioEdit(false);
+      showToast('About bio updated.');
+    }
+
+    /**
+     * Initialize View Mode: View Mode is primarily ON by default on page load
+     */
+    function initViewMode() {
+      isViewMode = true;
+      updateAuthUI();
+      applyViewMode(true, false);
+    }
+
+    /**
+     * Toggle between read-only View Mode and Edit Mode (requires authorized Google Sign-In)
+     */
+    function toggleViewMode() {
+      if (!authorizedUser) {
+        signInWithGoogle();
+        return;
+      }
+
+      isViewMode = !isViewMode;
+      applyViewMode(isViewMode, true);
+    }
+
+    /**
+     * Apply read-only View Mode UI restrictions across the header, feed, and About card
+     */
+    function applyViewMode(enabled, announce = false) {
+      const effectiveReadOnly = !authorizedUser || Boolean(enabled);
+      isViewMode = effectiveReadOnly;
+
+      const viewBtn = document.getElementById('view-mode-toggle-btn');
+      const eyeIcon = document.getElementById('icon-view-eye');
+      const lockIcon = document.getElementById('icon-view-lock');
+      const labelEl = document.getElementById('view-mode-label');
+      const writeBtn = document.getElementById('toggle-composer-btn');
+      const composer = document.getElementById('post-composer');
+      const editBioBtn = document.getElementById('edit-bio-btn');
+      const bioEditForm = document.getElementById('bio-edit-form');
+      const bioReadMode = document.getElementById('bio-read-mode');
+
+      if (viewBtn) {
+        viewBtn.setAttribute('aria-pressed', String(effectiveReadOnly));
+        if (!authorizedUser) {
+          viewBtn.title = 'View Mode active — sign in with Google to use Edit Mode';
+        } else {
+          viewBtn.title = effectiveReadOnly
+            ? 'View Mode active (click to switch to Edit Mode)'
+            : 'Edit Mode active (click to preview in View Mode)';
+        }
+
+        if (effectiveReadOnly) {
+          viewBtn.classList.add('bg-stone-200/85', 'dark:bg-stone-800', 'text-[#1F2937]', 'dark:text-[#F3F2EE]');
+        } else {
+          viewBtn.classList.remove('bg-stone-200/85', 'dark:bg-stone-800', 'text-[#1F2937]', 'dark:text-[#F3F2EE]');
+        }
+      }
+
+      if (eyeIcon) eyeIcon.classList.toggle('hidden', effectiveReadOnly);
+      if (lockIcon) lockIcon.classList.toggle('hidden', !effectiveReadOnly);
+      if (labelEl) {
+        if (!authorizedUser) {
+          labelEl.textContent = 'Read-Only';
+        } else {
+          labelEl.textContent = effectiveReadOnly ? 'View Mode' : 'Editing';
+        }
+      }
+      if (writeBtn) writeBtn.classList.toggle('hidden', effectiveReadOnly);
+      if (editBioBtn) editBioBtn.classList.toggle('hidden', effectiveReadOnly);
+
+      if (effectiveReadOnly) {
+        if (composer && !composer.classList.contains('hidden')) {
+          composer.classList.add('hidden');
+          pendingAttachments = [];
+          clearUploaderWarning();
+          renderComposerAttachments();
+        }
+        if (bioEditForm && !bioEditForm.classList.contains('hidden')) {
+          bioEditForm.classList.add('hidden');
+          if (bioReadMode) bioReadMode.classList.remove('hidden');
+        }
+        if (deleteResetTimer) clearTimeout(deleteResetTimer);
+        pendingDeleteId = null;
+      }
+
+      renderPosts();
+
+      if (announce) {
+        showToast(effectiveReadOnly ? 'View mode enabled — editing is locked.' : 'Edit mode unlocked.');
+      }
+    }
+
+    /**
+     * Lightbox viewer for published post image attachments
+     */
+    function openLightbox(postId, imageIndex) {
+      const post = posts.find((p) => p.id === postId);
+      if (!post || !Array.isArray(post.attachments)) return;
+
+      const images = post.attachments.filter((a) => a.isImage);
+      if (images.length === 0) return;
+
+      lightboxState = {
+        images,
+        index: Math.max(0, Math.min(imageIndex, images.length - 1)),
+      };
+
+      updateLightboxDisplay();
+      const modal = document.getElementById('image-lightbox');
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function stepLightbox(delta) {
+      const total = lightboxState.images.length;
+      if (total <= 1) return;
+      lightboxState.index = (lightboxState.index + delta + total) % total;
+      updateLightboxDisplay();
+    }
+
+    function updateLightboxDisplay() {
+      const imgEl = document.getElementById('lightbox-img');
+      const captionEl = document.getElementById('lightbox-caption');
+      const counterEl = document.getElementById('lightbox-counter');
+      const prevBtn = document.getElementById('lightbox-prev-btn');
+      const nextBtn = document.getElementById('lightbox-next-btn');
+
+      const current = lightboxState.images[lightboxState.index];
+      if (!current || !imgEl) return;
+
+      imgEl.src = current.dataUrl;
+      imgEl.alt = current.name || 'Image attachment';
+      if (captionEl) captionEl.textContent = current.name || 'Image';
+      if (counterEl) {
+        counterEl.textContent =
+          lightboxState.images.length > 1
+            ? `${lightboxState.index + 1} / ${lightboxState.images.length}`
+            : '';
+      }
+
+      const showNav = lightboxState.images.length > 1;
+      if (prevBtn) prevBtn.classList.toggle('hidden', !showNav);
+      if (nextBtn) nextBtn.classList.toggle('hidden', !showNav);
+    }
+
+    function closeLightbox() {
+      const modal = document.getElementById('image-lightbox');
+      if (modal) modal.classList.add('hidden');
+      lightboxState = { images: [], index: 0 };
+    }
+
+    /**
+     * Download a JSON backup of all local posts and bio data
+     */
+    function exportPostsBackup() {
+      try {
+        const payload = {
+          exportedAt: new Date().toISOString(),
+          blogTitle: 'Notes to Self',
+          bio,
+          posts,
+        };
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `notes-to-self-backup-${new Date().toISOString().slice(0, 10)}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        showToast('Backup downloaded.');
+      } catch (err) {
+        console.error('Export failed:', err);
+        showToast('Could not export backup.');
+      }
+    }
+
+    // Explicitly attach inline event handlers to window
+    window.switchView = switchView;
+    window.toggleComposer = toggleComposer;
+    window.toggleViewMode = toggleViewMode;
+    window.signInWithGoogle = signInWithGoogle;
+    window.openGoogleSignInModal = openGoogleSignInModal;
+    window.closeGoogleSignInModal = closeGoogleSignInModal;
+    window.selectPreviewGoogleAccount = selectPreviewGoogleAccount;
+    window.handlePreviewGoogleSignIn = handlePreviewGoogleSignIn;
+    window.signOutEditor = signOutEditor;
+    window.handleFooterAuthAction = handleFooterAuthAction;
+    window.dismissAuthNotice = dismissAuthNotice;
+    window.toggleTheme = toggleTheme;
+    window.clearUploaderWarning = clearUploaderWarning;
+    window.removePendingAttachment = removePendingAttachment;
+    window.handlePublishPost = handlePublishPost;
+    window.handleDeletePost = handleDeletePost;
+    window.toggleBioEdit = toggleBioEdit;
+    window.handleSaveBio = handleSaveBio;
+    window.openLightbox = openLightbox;
+    window.stepLightbox = stepLightbox;
+    window.closeLightbox = closeLightbox;
+    window.exportPostsBackup = exportPostsBackup;
+
+    // Boot the blog when DOM is ready
+    window.addEventListener('DOMContentLoaded', () => {
+      initTheme();
+      initDropzone();
+      posts = loadFromStorage(STORAGE_KEYS.POSTS, DEFAULT_POSTS);
+      bio = loadFromStorage(STORAGE_KEYS.BIO, DEFAULT_BIO);
+
+      renderPosts();
+      renderBio();
+      initViewMode();
+      initAuth();
+
+      const brandLink = document.getElementById('brand-link');
+      if (brandLink) {
+        brandLink.addEventListener('click', (e) => {
+          e.preventDefault();
+          switchView('journal');
+        });
+      }
+
+      const lightboxModal = document.getElementById('image-lightbox');
+      if (lightboxModal) {
+        lightboxModal.addEventListener('click', closeLightbox);
+      }
+
+      const signInModal = document.getElementById('google-signin-modal');
+      if (signInModal) {
+        signInModal.addEventListener('click', closeGoogleSignInModal);
+      }
+
+      document.addEventListener('keydown', (e) => {
+        const signInDialog = document.getElementById('google-signin-modal');
+        if (signInDialog && !signInDialog.classList.contains('hidden') && e.key === 'Escape') {
+          closeGoogleSignInModal();
+          return;
+        }
+
+        const modal = document.getElementById('image-lightbox');
+        if (!modal || modal.classList.contains('hidden')) return;
+        if (e.key === 'Escape') closeLightbox();
+        if (e.key === 'ArrowLeft') stepLightbox(-1);
+        if (e.key === 'ArrowRight') stepLightbox(1);
+      });
+    });
+  </script>
+</body>
+</html>
